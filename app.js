@@ -39,7 +39,6 @@ async function loadWeather({ name, lat, lon }) {
 function render(d) {
   const c = d.current;
   const now = info(c.weather_code, c.is_day);
-  document.body.classList.toggle("night", !c.is_day);
 
   $("temp").textContent = `${round(c.temperature_2m)}°`;
   $("desc").textContent = now.text;
@@ -100,5 +99,45 @@ $("search").addEventListener("submit", async (e) => {
     $("desc").textContent = "Search failed.";
   }
 });
+
+// Saved settings (wrapped in try/catch because storage can be blocked)
+const store = {
+  get: (k) => { try { return localStorage.getItem(k); } catch { return null; } },
+  set: (k, v) => { try { v ? localStorage.setItem(k, v) : localStorage.removeItem(k); } catch {} },
+};
+
+// Theme: system follows the device; light and dark override it
+function setTheme(theme) {
+  if (theme === "light" || theme === "dark") document.documentElement.dataset.theme = theme;
+  else delete document.documentElement.dataset.theme;
+  store.set("theme", theme === "system" ? null : theme);
+  document.querySelectorAll(".theme button").forEach((b) =>
+    b.setAttribute("aria-checked", b.dataset.theme === theme)
+  );
+}
+document.querySelectorAll(".theme button").forEach((b) =>
+  b.addEventListener("click", () => setTheme(b.dataset.theme))
+);
+setTheme(store.get("theme") || "system");
+
+// Greeting: ask for a name the first time, then remember it
+function showGreeting() {
+  const name = store.get("name");
+  const h = new Date().getHours();
+  const part = h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening";
+  $("greeting").textContent = name ? `${part}, ${name}` : part;
+  $("name-form").hidden = !!name;
+}
+$("greeting").addEventListener("click", () => {
+  $("name").value = store.get("name") || "";
+  $("name-form").hidden = false;
+  $("name").focus();
+});
+$("name-form").addEventListener("submit", (e) => {
+  e.preventDefault();
+  store.set("name", $("name").value.trim());
+  showGreeting();
+});
+showGreeting();
 
 loadWeather(DEFAULT);

@@ -4,12 +4,33 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Weather</title>
+  <script>
+    // Apply the saved theme before the page paints
+    try { const t = localStorage.getItem("theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch {}
+  </script>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="bg"></div>
 
   <main class="app">
+    <header class="top">
+      <button id="greeting" class="greeting" type="button" title="Change name"></button>
+      <div class="glass theme" role="radiogroup" aria-label="Theme">
+        <button type="button" data-theme="system" role="radio">System</button>
+        <button type="button" data-theme="light" role="radio">Light</button>
+        <button type="button" data-theme="dark" role="radio">Dark</button>
+      </div>
+    </header>
+
+    <form id="name-form" class="glass name-form" hidden>
+      <label for="name">What's your name?</label>
+      <div class="row">
+        <input id="name" type="text" placeholder="Your name" maxlength="30" autocomplete="given-name" />
+        <button type="submit">Save</button>
+      </div>
+    </form>
+
     <form id="search" class="glass search" autocomplete="off">
       <input id="city" type="text" placeholder="Search city…" aria-label="Search city" />
       <button type="submit" aria-label="Search">⌕</button>
